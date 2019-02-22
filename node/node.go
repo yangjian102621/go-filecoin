@@ -368,7 +368,7 @@ func (nc *Config) Build(ctx context.Context) (*Node, error) {
 		return nil, err
 	}
 
-	chainStore := chain.NewDefaultStore(nc.Repo.ChainDatastore(), &cstOffline, genCid)
+	chainStore := chain.NewDefaultStore(ctx, bservice, bs, nc.Repo.ChainDatastore(), genCid)
 	powerTable := &consensus.MarketView{}
 
 	var processor consensus.Processor

@@ -8,6 +8,7 @@ import (
 	"gx/ipfs/QmNf3wujpV2Y7Lnj2hy2UrmuX8bhMDStRHbnSLh7Ypf36h/go-hamt-ipld"
 	"gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	"gx/ipfs/QmVmDhyTTUcQXFD1rRQ64fGLMSAoaQvNH3hwuaCFAPq2hy/errors"
+	"gx/ipfs/QmXixGGfd98hN2dA5YiPHWANY3sjmHfZBQk3mLiQUo6NLJ/go-bitswap"
 	logging "gx/ipfs/QmbkT7eMTyXfpeyB3ZMxxcxg7XH8t6uXp49jqzz4HB7BGF/go-log"
 
 	"github.com/filecoin-project/go-filecoin/actor/builtin"
@@ -88,29 +89,10 @@ func NewDefaultSyncer(online, offline *hamt.CborIpldStore, c consensus.Protocol,
 // TODO the timeout factor blkWaitTime and maybe the whole timeout mechanism
 // could use some actual thought, this was just a simple first pass.
 func (syncer *DefaultSyncer) getBlksMaybeFromNet(ctx context.Context, blkCids []cid.Cid) ([]*types.Block, error) {
-	var blks []*types.Block
 	ctx, cancel := context.WithTimeout(ctx, blkWaitTime)
 	defer cancel()
-	for _, blkCid := range blkCids {
-		// try the chain store
-		blk, err := syncer.chainStore.GetBlock(ctx, blkCid)
-		if err == nil {
-			blks = append(blks, blk)
-			continue
-		}
-		// try the node's local offline storage
-		err = syncer.cstOffline.Get(ctx, blkCid, &blk)
-		if err == nil {
-			blks = append(blks, blk)
-			continue
-		}
-		// try the network
-		if err = syncer.cstOnline.Get(ctx, blkCid, &blk); err != nil {
-			return nil, err
-		}
-		blks = append(blks, blk)
-	}
-	return blks, nil
+
+	return syncer.chainStore.GetBlocks(ctx, blkCids)
 }
 
 // collectChain resolves the cids of the head tipset and its ancestors to blocks
@@ -152,6 +134,15 @@ func (syncer *DefaultSyncer) collectChain(ctx context.Context, blkCids []cid.Cid
 		height, _ := ts.Height()
 		if len(chain)%500 == 0 {
 			logSyncer.Infof("syncing the chain, currently at block height %d", height)
+
+			// HAXX: deleteme
+			stat, err := syncer.chainStore.(*DefaultStore).bserv.Exchange().(*bitswap.Bitswap).Stat()
+			if err != nil {
+				panic(err)
+			}
+			logSyncer.Infof("duplicate downloaded blocks: %d", stat.DupBlksReceived)
+			logSyncer.Infof("total data downloaded: %d", stat.DataReceived)
+			logSyncer.Infof("total num objects downloaded: %d", stat.BlocksReceived)
 		}
 
 		// Finish traversal if the tipset made is tracked in the store.
