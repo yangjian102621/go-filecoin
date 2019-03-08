@@ -142,14 +142,14 @@ jobs:
           name: Create macos bundle
           command: ./scripts/build-bundle.sh
       - store_artifacts:
-          path: "~/go/src/github.com/filecoin-project/go-filecoin/filecoin-Darwin.tar.gz"
-          destination: filecoin-Darwin.tar.gz
+          path: "~/go/src/github.com/filecoin-project/go-filecoin/bundle/"
+          destination: bundle
       - store_test_results:
           path: test-results
       - persist_to_workspace:
           root: "."
           paths:
-            - "filecoin-Darwin.tar.gz"
+            - "bundle/"
 
   build_linux:
     docker:
@@ -256,8 +256,8 @@ jobs:
           command: ./scripts/build-bundle.sh
 
       - store_artifacts:
-          path: "/go/src/github.com/filecoin-project/go-filecoin/filecoin-Linux.tar.gz"
-          destination: filecoin-Linux.tar.gz
+          path: "/go/src/github.com/filecoin-project/go-filecoin/bundle/"
+          destination: bundle
 
       - store_test_results:
           path: test-results
@@ -265,7 +265,7 @@ jobs:
       - persist_to_workspace:
           root: "."
           paths:
-            - "filecoin-Linux.tar.gz"
+            - "bundle/"
             - "gengen/gengen"
             - "fixtures"
 
@@ -288,6 +288,7 @@ jobs:
           name: Publish new release
           command: |
             ./scripts/publish-release.sh
+
   build_faucet_and_genesis:
     docker:
       - image: circleci/golang:1.11.1
@@ -385,6 +386,7 @@ jobs:
             docker push 657871693752.dkr.ecr.us-east-1.amazonaws.com/filecoin:$SHORT_GIT_SHA
             docker tag 657871693752.dkr.ecr.us-east-1.amazonaws.com/filecoin:$SHORT_GIT_SHA 657871693752.dkr.ecr.us-east-1.amazonaws.com/filecoin:latest
             docker push 657871693752.dkr.ecr.us-east-1.amazonaws.com/filecoin:latest
+
   trigger_nightly_devnet_deploy:
     docker:
       - image: circleci/golang:latest
@@ -409,6 +411,7 @@ jobs:
           command: |
             sudo apt-get install -y curl jq
             curl -X POST --header "Content-Type: application/json" -d '{"branch":"filecoin-nightly"}' https://circleci.com/api/v1.1/project/github/filecoin-project/go-filecoin-infra/build?circle-token=$CIRCLE_API_TOKEN
+
   trigger_user_devnet_deploy:
     docker:
       - image: circleci/golang:latest
@@ -453,6 +456,7 @@ jobs:
           command: |
             sudo apt-get install -y curl jq
             curl -X POST --header "Content-Type: application/json" -d '{"branch":"filecoin-usernet"}' https://circleci.com/api/v1.1/project/github/filecoin-project/go-filecoin-infra/build?circle-token=$CIRCLE_API_TOKEN
+
 workflows:
   version: 2
   test_all:
