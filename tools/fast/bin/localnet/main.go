@@ -308,7 +308,7 @@ func main() {
 	}
 
 	fmt.Println("Finished!")
-	fmt.Println("Ctrl-C to handleError")
+	fmt.Println("Ctrl-C to exit")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
