@@ -110,7 +110,18 @@ func init() {
 }
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	exit := make(chan struct{}, 1)
+
+	go func() {
+		signals := make(chan os.Signal, 1)
+		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+		<-signals
+		fmt.Println("Ctrl-C recieved, starting shutdown")
+		cancel()
+		exit <- struct{}{}
+	}()
 
 	defer func() {
 		os.Exit(exitcode)
@@ -310,10 +321,7 @@ func main() {
 	fmt.Println("Finished!")
 	fmt.Println("Ctrl-C to exit")
 
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-	<-signals
+	<-exit
 }
 
 func handleError(err error, msg ...string) int {
