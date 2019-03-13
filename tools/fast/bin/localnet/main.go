@@ -37,14 +37,18 @@ import (
 )
 
 var (
-	workdir      string
-	shell        bool
-	count        = 5
-	blocktime    = 5 * time.Second
-	err          error
-	fil          = 100000
-	balance      big.Int
-	smallSectors = true
+	workdir         string
+	shell           bool
+	blocktime       = 5 * time.Second
+	err             error
+	fil             = 100000
+	balance         big.Int
+	smallSectors           = true
+	minerCount             = 5
+	minerPledge     uint64 = 10
+	minerCollateral        = big.NewInt(500)
+	minerPrice             = big.NewFloat(0.000000001)
+	minerExpiry            = big.NewInt(24 * 60 * 60)
 
 	sectorSize uint64
 
@@ -52,15 +56,43 @@ var (
 )
 
 func init() {
-	var err error
 
 	logging.SetDebugLogging()
 
-	flag.StringVar(&workdir, "workdir", workdir, "set the working directory")
+	var (
+		err                error
+		minerCollateralArg = minerCollateral.Text(10)
+		minerPriceArg      = minerPrice.Text('f', 10)
+		minerExpiryArg     = minerExpiry.Text(10)
+	)
+
+	flag.StringVar(&workdir, "workdir", workdir, "set the working directory used to store filecoin repos")
 	flag.BoolVar(&shell, "shell", shell, "drop into a shell")
 	flag.BoolVar(&smallSectors, "small-sectors", smallSectors, "enables small sectors")
-	flag.IntVar(&count, "count", count, "number of miners")
 	flag.DurationVar(&blocktime, "blocktime", blocktime, "duration for blocktime")
+	flag.IntVar(&minerCount, "miner-count", minerCount, "number of miners")
+	flag.Uint64Var(&minerPledge, "miner-pledge", minerPledge, "number of sectors to pledge for each miner")
+	flag.StringVar(&minerCollateralArg, "miner-collateral", minerCollateralArg, "amount of fil each miner will use for collateral")
+	flag.StringVar(&minerPriceArg, "miner-price", minerPriceArg, "price value used when creating ask for miners")
+	flag.StringVar(&minerExpiryArg, "miner-expiry", minerExpiryArg, "expiry value used when creating ask for miners")
+
+	_, ok := minerCollateral.SetString(minerCollateralArg, 10)
+	if !ok {
+		handleError(fmt.Errorf("Could not parse miner-collateral"))
+		os.Exit(1)
+	}
+
+	_, ok = minerPrice.SetString(minerPriceArg)
+	if !ok {
+		handleError(fmt.Errorf("Could not parse miner-price"))
+		os.Exit(1)
+	}
+
+	_, ok = minerExpiry.SetString(minerExpiryArg, 10)
+	if !ok {
+		handleError(fmt.Errorf("Could not parse miner-expiry"))
+		os.Exit(1)
+	}
 
 	flag.Parse()
 
@@ -94,7 +126,7 @@ func main() {
 
 	if ok, err := isEmpty(workdir); !ok {
 		if err == nil {
-			err = fmt.Errorf("workdir is not empty")
+			err = fmt.Errorf("workdir is not empty: %s", workdir)
 		}
 
 		exitcode = handleError(err, "fail when checking workdir;")
@@ -151,7 +183,7 @@ func main() {
 
 	// Create the processes that we will use to become miners
 	var miners []*fast.Filecoin
-	for i := 0; i < count; i++ {
+	for i := 0; i < minerCount; i++ {
 		miner, err := env.NewProcess(ctx, lpfc.PluginName, options, fastenvOpts)
 		if err != nil {
 			exitcode = handleError(err, "failed to create miner process;")
@@ -204,12 +236,7 @@ func main() {
 			return
 		}
 
-		pledge := uint64(10)                    // sectors
-		collateral := big.NewInt(500)           // FIL
-		price := big.NewFloat(0.000000001)      // price per byte/block
-		expiry := big.NewInt(24 * 60 * 60 / 30) // ~24 hours
-
-		ask, err := series.CreateMinerWithAsk(ctx, miner, pledge, collateral, price, expiry)
+		ask, err := series.CreateMinerWithAsk(ctx, miner, minerPledge, minerCollateral, minerPrice, minerExpiry)
 		if err != nil {
 			exitcode = handleError(err, "failed series.CreateMinerWithAsk;")
 			return
