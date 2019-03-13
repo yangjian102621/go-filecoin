@@ -128,6 +128,10 @@ func deps() {
 		cmd("go get -u github.com/prometheus/client_golang/prometheus/promhttp"),
 		cmd("go get -u github.com/jstemmer/go-junit-report"),
 		cmd("go get -u github.com/pmezard/go-difflib/difflib"),
+		cmd("go get -u go.opencensus.io/exporter/prometheus"),
+		cmd("go get -u go.opencensus.io/stats"),
+		cmd("go get -u go.opencensus.io/tags"),
+		cmd("go get -u go.opencensus.io/zpages"),
 		cmd("./scripts/install-rust-fil-proofs.sh"),
 		cmd("./scripts/install-bls-signatures.sh"),
 		cmd("./proofs/bin/paramfetch --all --verbose --json=./proofs/misc/parameters.json"),
@@ -174,6 +178,10 @@ func smartdeps() {
 		"github.com/prometheus/client_golang/prometheus",
 		"github.com/jstemmer/go-junit-report",
 		"github.com/pmezard/go-difflib/difflib",
+		"go.opencensus.io/exporter/prometheus",
+		"go.opencensus.io/stats",
+		"go.opencensus.io/tag",
+		"go.opencensus.io/zpages",
 	}
 
 	gopath := os.Getenv("GOPATH")
