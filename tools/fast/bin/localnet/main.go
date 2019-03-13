@@ -330,7 +330,7 @@ func handleError(err error, msg ...string) int {
 	return 1
 }
 
-// https://stackoverflow.com/a/3070891://stackoverflow.com/a/30708914
+// https://stackoverflow.com/a/30708914
 func isEmpty(name string) (bool, error) {
 	f, err := os.Open(name)
 	if err != nil {
