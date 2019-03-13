@@ -12,7 +12,10 @@ import (
 var ErrWithWalletRestoreFailed = errors.New("failed to restore default wallet after WithWallet exited")
 
 // WithWallet can be used to temporarlly change the default wallet address of
-// the node to sessionWallet for all FAST actions exected inside of sessionFn.
+// the node to sessionWallet for all FAST actions executed inside of sessionFn.
+//
+// WithWallet should be used when you want to temporarally change the default
+// wallet address of the node.
 //
 // Error ErrWithWalletRestoreFailed will be returned if the original address
 // could not be restored.
