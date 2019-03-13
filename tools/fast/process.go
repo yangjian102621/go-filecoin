@@ -3,6 +3,7 @@ package fast
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
@@ -14,6 +15,11 @@ import (
 	"github.com/filecoin-project/go-filecoin/tools/fast/fastutil"
 	dockerplugin "github.com/filecoin-project/go-filecoin/tools/iptb-plugins/filecoin/docker"
 	localplugin "github.com/filecoin-project/go-filecoin/tools/iptb-plugins/filecoin/local"
+)
+
+var (
+	ErrDoubleInitOpts   = errors.New("Cannot provide both init options through environment and arguments")
+	ErrDoubleDaemonOpts = errors.New("Cannot provide both daemon options through environment and arguments")
 )
 
 // must register all filecoin iptb plugins first.
@@ -85,6 +91,10 @@ func NewFilecoinProcess(ctx context.Context, c IPTBCoreExt, eo EnvironmentOpts) 
 
 // InitDaemon initializes the filecoin daemon process.
 func (f *Filecoin) InitDaemon(ctx context.Context, args ...string) (testbedi.Output, error) {
+	if len(args) != 0 && len(f.initOpts) != 0 {
+		return nil, ErrDoubleInitOpts
+	}
+
 	if len(args) == 0 {
 		for _, opt := range f.initOpts {
 			args = append(args, opt()...)
@@ -96,6 +106,10 @@ func (f *Filecoin) InitDaemon(ctx context.Context, args ...string) (testbedi.Out
 
 // StartDaemon starts the filecoin daemon process.
 func (f *Filecoin) StartDaemon(ctx context.Context, wait bool, args ...string) (testbedi.Output, error) {
+	if len(args) != 0 && len(f.daemonOpts) != 0 {
+		return nil, ErrDoubleDaemonOpts
+	}
+
 	if len(args) == 0 {
 		for _, opt := range f.daemonOpts {
 			args = append(args, opt()...)
