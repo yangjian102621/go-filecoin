@@ -150,6 +150,7 @@ func smartdeps() {
 	cmds := []command{
 		cmd("gx install"),
 		cmd("gx-go rewrite"),
+		cmd("go get -u go.opencensus.io"),
 		cmd("gometalinter --install"),
 		cmd("./scripts/install-rust-fil-proofs.sh"),
 		cmd("./scripts/install-bls-signatures.sh"),
@@ -175,7 +176,6 @@ func smartdeps() {
 		"github.com/prometheus/client_golang/prometheus",
 		"github.com/jstemmer/go-junit-report",
 		"github.com/pmezard/go-difflib/difflib",
-		"-u go.opencensus.io",
 	}
 
 	gopath := os.Getenv("GOPATH")
