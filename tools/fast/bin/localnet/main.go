@@ -118,7 +118,7 @@ func main() {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 		<-signals
-		fmt.Println("Ctrl-C recieved, starting shutdown")
+		fmt.Println("Ctrl-C received, starting shutdown")
 		cancel()
 		exit <- struct{}{}
 	}()
