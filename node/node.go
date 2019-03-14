@@ -13,7 +13,6 @@ import (
 	ma "gx/ipfs/QmNTCey11oxhb1AxDnQBRHtdhap6Ctud872NjAYPYYXPuc/go-multiaddr"
 	circuit "gx/ipfs/QmNaXXRfJ93t4HicX8N2WZPhdE8KU39MPGALuH421GFgKA/go-libp2p-circuit"
 	"gx/ipfs/QmNf3wujpV2Y7Lnj2hy2UrmuX8bhMDStRHbnSLh7Ypf36h/go-hamt-ipld"
-	"gx/ipfs/QmP2g3VxmC7g7fyRJDj1VJ72KHZbJ9UW24YjSWEj1XTb4H/go-ipfs-exchange-interface"
 	cid "gx/ipfs/QmR8BauakNcBa3RbE4nbQu76PDiJgoQgz8AJdhJuiU4TAw/go-cid"
 	bstore "gx/ipfs/QmRu7tiRnFk9mMPpVECQTBQJqXtmG132jJxA1w9A7TtpBz/go-ipfs-blockstore"
 	"gx/ipfs/QmSz8kAe2JCKp2dWSG8gHSWnwSmne8YfRXTeK5HBmc9L7t/go-ipfs-exchange-offline"
@@ -127,7 +126,6 @@ type Node struct {
 	Ping         *ping.PingService
 	HelloSvc     *hello.Handler
 	Bootstrapper *net.Bootstrapper
-	OnlineStore  *hamt.CborIpldStore
 
 	// Data Storage Fields
 
@@ -138,8 +136,8 @@ type Node struct {
 	// SectorBuilder is used by the miner to fill and seal sectors.
 	sectorBuilder sectorbuilder.SectorBuilder
 
-	// Exchange is the interface for fetching data from other nodes.
-	Exchange exchange.Interface
+	// Fetcher is the interface for fetching data from nodes.
+	Fetcher *net.Fetcher
 
 	// Blockstore is the un-networked blocks interface
 	Blockstore bstore.Blockstore
@@ -360,15 +358,15 @@ func (nc *Config) Build(ctx context.Context) (*Node, error) {
 	//nwork := bsnet.NewFromIpfsHost(innerHost, router)
 	bswap := bitswap.New(ctx, nwork, bs)
 	bservice := bserv.New(bs, bswap)
+	fetcher := net.NewFetcher(ctx, bservice)
 
-	cstOnline := hamt.CborIpldStore{Blocks: bservice}
 	cstOffline := hamt.CborIpldStore{Blocks: bserv.New(bs, offline.Exchange(bs))}
 	genCid, err := readGenesisCid(nc.Repo.Datastore())
 	if err != nil {
 		return nil, err
 	}
 
-	chainStore := chain.NewDefaultStore(ctx, bservice, bs, nc.Repo.ChainDatastore(), genCid)
+	chainStore := chain.NewDefaultStore(nc.Repo.ChainDatastore(), &cstOffline, genCid)
 	powerTable := &consensus.MarketView{}
 
 	var processor consensus.Processor
@@ -386,7 +384,7 @@ func (nc *Config) Build(ctx context.Context) (*Node, error) {
 	}
 
 	// only the syncer gets the storage which is online connected
-	chainSyncer := chain.NewDefaultSyncer(&cstOnline, &cstOffline, nodeConsensus, chainStore)
+	chainSyncer := chain.NewDefaultSyncer(&cstOffline, nodeConsensus, chainStore, fetcher)
 	msgPool := core.NewMessagePool(chainStore)
 
 	// Set up libp2p pubsub
@@ -418,13 +416,12 @@ func (nc *Config) Build(ctx context.Context) (*Node, error) {
 		blockservice: bservice,
 		Blockstore:   bs,
 		cborStore:    &cstOffline,
-		OnlineStore:  &cstOnline,
 		Consensus:    nodeConsensus,
 		ChainReader:  chainStore,
 		Syncer:       chainSyncer,
 		PowerTable:   powerTable,
 		PorcelainAPI: PorcelainAPI,
-		Exchange:     bswap,
+		Fetcher:      fetcher,
 		host:         peerHost,
 		MsgPool:      msgPool,
 		OfflineMode:  nc.OfflineMode,
