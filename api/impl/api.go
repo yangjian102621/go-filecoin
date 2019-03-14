@@ -16,7 +16,6 @@ type nodeAPI struct {
 	address         *nodeAddress
 	client          *nodeClient
 	daemon          *nodeDaemon
-	dag             *nodeDag
 	miner           *nodeMiner
 	mining          *nodeMining
 	ping            *nodePing
@@ -42,7 +41,6 @@ func New(node *node.Node) api.API {
 	api.address = newNodeAddress(api)
 	api.client = newNodeClient(api)
 	api.daemon = newNodeDaemon(api)
-	api.dag = newNodeDag(api)
 	api.miner = newNodeMiner(api, porcelainAPI)
 	api.mining = newNodeMining(api)
 	api.ping = newNodePing(api)
@@ -66,10 +64,6 @@ func (api *nodeAPI) Client() api.Client {
 
 func (api *nodeAPI) Daemon() api.Daemon {
 	return api.daemon
-}
-
-func (api *nodeAPI) Dag() api.Dag {
-	return api.dag
 }
 
 func (api *nodeAPI) Miner() api.Miner {

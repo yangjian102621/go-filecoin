@@ -7,7 +7,6 @@ type API interface {
 	Address() Address
 	Client() Client
 	Daemon() Daemon
-	Dag() Dag
 	Miner() Miner
 	Mining() Mining
 	Ping() Ping

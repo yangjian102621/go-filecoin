@@ -18,6 +18,7 @@ import (
 	"github.com/filecoin-project/go-filecoin/net"
 	"github.com/filecoin-project/go-filecoin/net/pubsub"
 	"github.com/filecoin-project/go-filecoin/plumbing/cfg"
+	"github.com/filecoin-project/go-filecoin/plumbing/dag"
 	"github.com/filecoin-project/go-filecoin/plumbing/msg"
 	"github.com/filecoin-project/go-filecoin/plumbing/mthdsig"
 	"github.com/filecoin-project/go-filecoin/plumbing/strgdls"
@@ -36,6 +37,7 @@ type API struct {
 
 	chain        chain.ReadStore
 	config       *cfg.Config
+	dag          *dag.DAG
 	msgPool      *core.MessagePool
 	msgPreviewer *msg.Previewer
 	msgQueryer   *msg.Queryer
@@ -51,6 +53,7 @@ type API struct {
 type APIDeps struct {
 	Chain        chain.ReadStore
 	Config       *cfg.Config
+	DAG          *dag.DAG
 	Deals        *strgdls.Store
 	MsgPool      *core.MessagePool
 	MsgPreviewer *msg.Previewer
@@ -69,6 +72,7 @@ func New(deps *APIDeps) *API {
 
 		chain:        deps.Chain,
 		config:       deps.Config,
+		dag:          deps.DAG,
 		msgPool:      deps.MsgPool,
 		msgPreviewer: deps.MsgPreviewer,
 		msgQueryer:   deps.MsgQueryer,
@@ -238,4 +242,9 @@ func (api *API) WalletFind(address address.Address) (wallet.Backend, error) {
 // WalletNewAddress generates a new wallet address
 func (api *API) WalletNewAddress() (address.Address, error) {
 	return wallet.NewAddress(api.wallet)
+}
+
+// DAGGet returns the associated DAG node for the passed in CID.
+func (api *API) DAGGet(ctx context.Context, ref string) (interface{}, error) {
+	return api.dag.Get(ctx, ref)
 }
