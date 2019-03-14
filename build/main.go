@@ -150,7 +150,10 @@ func smartdeps() {
 	cmds := []command{
 		cmd("gx install"),
 		cmd("gx-go rewrite"),
+		// becasue we call go install on pkgs and that will fail
 		cmd("go get -u go.opencensus.io"),
+		// because go getting opencensus doesn't actually get everything :(
+		cmd("go get -u google.golang.org/grpc"),
 		cmd("gometalinter --install"),
 		cmd("./scripts/install-rust-fil-proofs.sh"),
 		cmd("./scripts/install-bls-signatures.sh"),
@@ -170,7 +173,6 @@ func smartdeps() {
 		"github.com/whyrusleeping/gx",
 		"github.com/whyrusleeping/gx-go",
 		"github.com/xeipuuv/gojsonschema",
-		"github.com/json-iterator/go",
 		"github.com/ipsn/go-secp256k1",
 		"github.com/prometheus/client_golang/prometheus/promhttp",
 		"github.com/prometheus/client_golang/prometheus",
