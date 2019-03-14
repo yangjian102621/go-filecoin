@@ -20,11 +20,11 @@ import (
 var (
 	// ErrDoubleInitOpts is returned by InitDaemon when both init options are provided by EnvironmentOpts
 	// in NewProcess as well as passed to InitDaemon directly.
-	ErrDoubleInitOpts = errors.New("Cannot provide both init options through environment and arguments")
+	ErrDoubleInitOpts = errors.New("cannot provide both init options through environment and arguments")
 
 	// ErrDoubleDaemonOpts is returned by StartDaemon when both init options are provided by EnvironmentOpts
 	// in NewProcess as well as passed to StartDaemon directly.
-	ErrDoubleDaemonOpts = errors.New("Cannot provide both daemon options through environment and arguments")
+	ErrDoubleDaemonOpts = errors.New("cannot provide both daemon options through environment and arguments")
 )
 
 // must register all filecoin iptb plugins first.

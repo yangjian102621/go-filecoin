@@ -78,19 +78,19 @@ func init() {
 
 	_, ok := minerCollateral.SetString(minerCollateralArg, 10)
 	if !ok {
-		handleError(fmt.Errorf("Could not parse miner-collateral"))
+		handleError(fmt.Errorf("could not parse miner-collateral"))
 		os.Exit(1)
 	}
 
 	_, ok = minerPrice.SetString(minerPriceArg)
 	if !ok {
-		handleError(fmt.Errorf("Could not parse miner-price"))
+		handleError(fmt.Errorf("could not parse miner-price"))
 		os.Exit(1)
 	}
 
 	_, ok = minerExpiry.SetString(minerExpiryArg, 10)
 	if !ok {
-		handleError(fmt.Errorf("Could not parse miner-expiry"))
+		handleError(fmt.Errorf("could not parse miner-expiry"))
 		os.Exit(1)
 	}
 
