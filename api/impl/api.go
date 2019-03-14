@@ -13,7 +13,6 @@ type nodeAPI struct {
 	logger logging.EventLogger
 
 	actor           *nodeActor
-	address         *nodeAddress
 	client          *nodeClient
 	daemon          *nodeDaemon
 	dag             *nodeDag
@@ -39,7 +38,6 @@ func New(node *node.Node) api.API {
 	}
 
 	api.actor = newNodeActor(api)
-	api.address = newNodeAddress(api)
 	api.client = newNodeClient(api)
 	api.daemon = newNodeDaemon(api)
 	api.dag = newNodeDag(api)
@@ -54,10 +52,6 @@ func New(node *node.Node) api.API {
 
 func (api *nodeAPI) Actor() api.Actor {
 	return api.actor
-}
-
-func (api *nodeAPI) Address() api.Address {
-	return api.address
 }
 
 func (api *nodeAPI) Client() api.Client {
