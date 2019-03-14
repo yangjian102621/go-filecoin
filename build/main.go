@@ -128,7 +128,11 @@ func deps() {
 		cmd("go get -u github.com/prometheus/client_golang/prometheus/promhttp"),
 		cmd("go get -u github.com/jstemmer/go-junit-report"),
 		cmd("go get -u github.com/pmezard/go-difflib/difflib"),
+
 		cmd("go get -u go.opencensus.io"),
+		cmd("go get -u github.com/hashicorp/golang-lru/simplelru"),
+		cmd("go get -u google.golang.org/grpc"),
+
 		cmd("./scripts/install-rust-fil-proofs.sh"),
 		cmd("./scripts/install-bls-signatures.sh"),
 		cmd("./proofs/bin/paramfetch --all --verbose --json=./proofs/misc/parameters.json"),
@@ -150,7 +154,7 @@ func smartdeps() {
 	cmds := []command{
 		cmd("gx install"),
 		cmd("gx-go rewrite"),
-		// becasue we call go install on pkgs and that will fail
+		// because we call go install on pkgs and that will fail
 		cmd("go get -u go.opencensus.io"),
 		// because go getting opencensus doesn't actually get everything :(
 		cmd("go get -u google.golang.org/grpc"),
@@ -178,6 +182,7 @@ func smartdeps() {
 		"github.com/prometheus/client_golang/prometheus",
 		"github.com/jstemmer/go-junit-report",
 		"github.com/pmezard/go-difflib/difflib",
+		"github.com/hashicorp/golang-lru/simplelru",
 	}
 
 	gopath := os.Getenv("GOPATH")
