@@ -580,6 +580,9 @@ func (sm *Miner) OnCommitmentAddedToChain(sector *sectorbuilder.SealedSectorMeta
 	}
 }
 
+// 密封成功，更新响应信息
+// 1 切换状态至Posted
+// 2 更新证明信息：扇区ID,副本信息，原始数据信息
 func (sm *Miner) onCommitSuccess(dealCid cid.Cid, sector *sectorbuilder.SealedSectorMetadata) {
 	err := sm.updateDealResponse(dealCid, func(resp *storagedeal.Response) {
 		resp.State = storagedeal.Posted
